@@ -1,0 +1,60 @@
+stages:
+  - build
+  - style
+  - test
+  - deploy
+  - notify
+
+build-code:
+  stage: build
+  tags:
+    - serrylig
+  script:
+    - cd src/cat
+    - make s21_cat
+    - cd ../grep/
+    - make s21_grep
+  artifacts:
+    paths:
+      - src/cat/
+      - src/grep/
+    expire_in: 30 days
+
+style-code:
+  stage: style
+  tags:
+    - serrylig
+  script:
+    - cd src/cat
+    - make style
+    - cd ../grep/
+    - make style
+
+test-code:
+  stage: test
+  tags:
+    - serrylig
+  script:
+    - cd src/cat
+    - make test
+    - cd ../grep/
+    - make test
+
+copy-files:
+  stage: deploy
+  tags:
+    - serrylig
+  when: manual
+  script:
+    - chmod 777 src/copy.sh src/notify.sh
+    - sh src/copy.sh
+    - sh src/notify.sh SUCCESS
+
+notify-err:
+  stage: notify
+  tags:
+    - serrylig
+  when: on_failure
+  script:
+    - chmod 777 src/notify.sh
+    - sh src/notify.sh FAIL
